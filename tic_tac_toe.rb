@@ -1,10 +1,3 @@
-=begin
-need methods for:
-- not overriding existing entry
-- validating entries
-- exiting game as soon as game over rather than requesting another move
-=end
-
 class Game 
   attr_accessor :board_hash, :player1, :player2, :grid_ref, :current_player, :sign
   attr_reader :counter
@@ -17,7 +10,14 @@ class Game
   end 
   
   def place_mark
-    @board_hash[@grid_ref] = @current_player.sign
+    if board_hash[@grid_ref] == " "
+      @board_hash[@grid_ref] = @current_player.sign
+      display_board
+    else
+      puts "This square has already been taken."
+      @counter -= 1
+      switch_players
+    end   
   end
   
   def switch_players
@@ -35,45 +35,45 @@ class Game
     end 
     
   def row_achieved?
-    row_achieved = false 
-    if 
-      @board_hash[:a1] && @board_hash[:a2] && @board_hash[:a3] == "X"
-      @board_hash[:b1] && @board_hash[:b2] && @board_hash[:b3] == "X"
-      @board_hash[:c1] && @board_hash[:c2] && @board_hash[:c3] == "X"
-      @board_hash[:a1] && @board_hash[:b1] && @board_hash[:c1] == "X"
-      @board_hash[:a2] && @board_hash[:b2] && @board_hash[:c2] == "X"
-      @board_hash[:a3] && @board_hash[:b3] && @board_hash[:c3] == "X"
-      @board_hash[:a1] && @board_hash[:b2] && @board_hash[:c3] == "X"
-      @board_hash[:a3] && @board_hash[:b2] && @board_hash[:c1] == "X"
-      @board_hash[:a1] && @board_hash[:a2] && @board_hash[:a3] == "O"
-      @board_hash[:b1] && @board_hash[:b2] && @board_hash[:b3] == "O"
-      @board_hash[:c1] && @board_hash[:c2] && @board_hash[:c3] == "O"
-      @board_hash[:a1] && @board_hash[:b1] && @board_hash[:c1] == "O"
-      @board_hash[:a2] && @board_hash[:b2] && @board_hash[:c2] == "O"
-      @board_hash[:a3] && @board_hash[:b3] && @board_hash[:c3] == "O"
-      @board_hash[:a1] && @board_hash[:b2] && @board_hash[:c3] == "O"
-      @board_hash[:a3] && @board_hash[:b2] && @board_hash[:c1] == "O"
-      row_achieved = true
-    end
+    if (@board_hash[:a1] == @board_hash[:a2] && @board_hash[:a2] == @board_hash[:a3] && @board_hash[:a3] != " ") ||
+	  (@board_hash[:b1] == @board_hash[:b2] && @board_hash[:b2] == @board_hash[:b3] && @board_hash[:b3] != " ") ||
+	  (@board_hash[:c1] == @board_hash[:c2] && @board_hash[:c2] == @board_hash[:c3] && @board_hash[:c3] != " ") ||
+	  (@board_hash[:a1] == @board_hash[:b1] && @board_hash[:b1] == @board_hash[:c1] && @board_hash[:c1] != " ") ||
+	  (@board_hash[:a2] == @board_hash[:b2] && @board_hash[:b2] == @board_hash[:c2] && @board_hash[:c2] != " ") ||
+	  (@board_hash[:a3] == @board_hash[:b3] && @board_hash[:b3] == @board_hash[:c3] && @board_hash[:c3] != " ") ||
+	  (@board_hash[:a1] == @board_hash[:b2] && @board_hash[:b2] == @board_hash[:c3] && @board_hash[:c3] != " ") ||
+	  (@board_hash[:c1] == @board_hash[:b2] && @board_hash[:b2] == @board_hash[:a3] && @board_hash[:a3] != " ")
+	  return true
+	end
   end 
-  
+
   def game_over?
-    @game_over = false
-    if counter > 9 || row_achieved?
-      @game_over = true 
+    if counter == 9 
+      puts "Game tied."
+      return true 
+    elsif
+      row_achieved?
+      switch_players
+      puts "Well done. #{current_player.sign} has won the game."
+      return true 
     end
   end
-  
+
   def play_game
     @current_player = @player1
+    display_board
     until game_over?
-      display_board
       puts "Please type the grid reference of the cell where you wish to place your mark"
       puts "e.g. 'a1', 'b2', 'c3'"
-      @grid_ref = gets.chomp.to_sym
-      place_mark
-      @counter +=1 
-      switch_players
+      @grid_ref = gets.chomp
+      if (@grid_ref.length == 2) && (@grid_ref =~ /^[abc]/) && (@grid_ref =~ /[123]$/)
+        @grid_ref = @grid_ref.to_sym
+        place_mark 
+        @counter +=1 
+        switch_players
+      else 
+        puts "That grid reference is not valid."
+      end 
     end
   end   
   
@@ -88,8 +88,3 @@ class Game
 end 
 new_game = Game.new
 new_game.play_game
-
-
-
-
-
